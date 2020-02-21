@@ -2,6 +2,8 @@ package com.biz.memo.repository;
 
 import android.app.Application;
 
+import androidx.lifecycle.LiveData;
+
 import com.biz.memo.db.MemoDataBase;
 import com.biz.memo.domain.MemoVO;
 
@@ -19,11 +21,27 @@ public class MemoRepository {
         mDao = db.getMemoDao();
     }
 
-    public List<MemoVO> selectAll(){
+    public LiveData<List<MemoVO>> selectAll(){
        return mDao.selectAll();
     }
 
+    // Thread로 insert 실행
     public void insert(MemoVO memoVO){
-        mDao.save(memoVO);
+
+/*
+        MemoDataBase.dbWriterThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                mDao.insert(memoVO);
+            }
+        });
+*/
+
+        MemoDataBase.dbWriterThread.execute( ()->mDao.save(memoVO) );
+
+    }
+
+    public void delete(MemoVO memoVO){
+        MemoDataBase.dbWriterThread.execute( ()->mDao.delete(memoVO) );
     }
 }
